@@ -1,0 +1,3 @@
+all_stock_data.csv
+*.pyc
+__pycache__/
