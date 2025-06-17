@@ -6,75 +6,75 @@ def defineLabel(stock):
     count = 0
     total = 0
     rating, percentage = mostRecommendations(stock)
-    if rating in ["strongBuy", "buy"] and percentage >= 50:
+    if rating in ["strongBuy", "buy"] and percentage is not None and percentage >= 50:
         count += 1
     total += 1
 
     dividend = getDividendYield(stock)
-    if 0.4 < dividend < 0.6:
+    if 0.4 < dividend < 0.6  :
         count += 1
     total += 1
 
     growth = getNextYearGrowth(stock)
-    if growth > 0.1:
+    if growth > 0.1 and growth is not None:
         count += 1
     total += 1
 
     insiderMoney = getNetInsiderPurchases(stock)
-    if insiderMoney > 100000:
+    if insiderMoney > 100000 and insiderMoney is not None:
         count += 1
     total += 1
 
     roe = return_on_investments(stock) # 15 or more % good
-    if roe > 0.15:
+    if roe > 0.15 and roe is not None:
         count += 1
     total += 1
 
     roa = get_return_on_assets(stock)  # 5 or more % good
-    if roa > 0.05:
+    if roa > 0.05 and roa is not None:
         count += 1
     total += 1
 
     currentRatio = current_ratio(stock) # 1.2/1.4 - 2 is good - more doesnt mean good necessarily since it would mean they arent investing or selling much or whatver - careful
-    if 1.5 <= currentRatio <= 2.0:
+    if 1.5 <= currentRatio <= 2.0 and currentRatio is not None:
         count += 1
     total += 1
 
     quickRatio = quick_ratio(stock) #anything 1 or higher
-    if quickRatio > 1:
+    if quickRatio > 1 and quickRatio is not None:
         count += 1
     total += 1
 
     debtEquity = debtEquityRatio(stock)  #0.5 to 1.5 is considered fine
-    if 0.5 < debtEquity < 1.5:
+    if 0.5 < debtEquity < 1.5 and debtEquity is not None:
         count += 1
     total += 1
 
     assetTurnover = getAssestTurnoverRatio(stock) #asset turnover ratio - 1 or higher is better but depends on industry i think
-    if assetTurnover > 1:
+    if assetTurnover > 1 and assetTurnover is not None:
         count += 1
     total += 1
 
     df, SMA_20, SMA_50, SMA_100, SMA_200 = simpleMovingAverage(stock)
 
     npm = net_profit_margin(stock) # 10 or more % usually good
-    if npm > 0.1:
+    if npm > 0.1 and npm is not None:
         count += 1
     total += 1
 
     priceEarningsRatio = get_price_earnings_ratio(stock) # below 15 is good but the average is 20 25
-    if priceEarningsRatio < 15:
+    if priceEarningsRatio < 15 and priceEarningsRatio is not None:
         count += 1
     total += 1
 
     volume = getVolume(stock)
-    if 400000 < volume < 20000000:
+    if 400000 < volume < 20000000 and volume is not None:
         count += 1
     total += 1
 
     lowYear = yearLow(stock)
     low, high = percent_range(lowYear)
-    if low < lowYear < high:
+    if low < lowYear < high and lowYear is not None:
         count += 1
     total += 1
 
@@ -111,7 +111,7 @@ def csvTickers():
                 dataset.append(features + [label])
 
                 count += 1
-                if count >= 50:
+                if count >= 9000:
                     break  # Stop after processing 5 stocks
 
             except Exception as e:
@@ -133,67 +133,49 @@ def extractFeatures(stock):
     features = []
 
     rating, percentage = mostRecommendations(stock)
-    features.append(1 if rating in ["strongBuy", "buy"] and percentage >= 50 else 0)
+    features.append(1 if rating in ["strongBuy", "buy"] and percentage is not None and percentage >= 50 else 0)
 
     dividend = getDividendYield(stock)
-    features.append(1 if 0.4 < dividend < 0.6 else 0)
+    features.append(1 if 0.4 < dividend < 0.6 and dividend is not None else 0)
 
     growth = getNextYearGrowth(stock)
-    features.append(1 if growth > 0.1 else 0)
+    features.append(1 if growth > 0.1 and growth is not None else 0)
 
     insiderMoney = getNetInsiderPurchases(stock)
-    features.append(1 if insiderMoney > 100000 else 0)
+    features.append(1 if insiderMoney > 100000 and insiderMoney is not None else 0)
 
     roe = return_on_investments(stock)
-    features.append(1 if roe > 0.15 else 0)
+    features.append(1 if roe > 0.15 and roe is not None else 0)
 
     roa = get_return_on_assets(stock)
-    features.append(1 if roa > 0.15 else 0)
+    features.append(1 if roa > 0.15 and roa is not None else 0)
 
     currentRatio = current_ratio(stock)
-    features.append(1 if 1.5 <= currentRatio <= 2.0 else 0)
+    features.append(1 if 1.5 <= currentRatio <= 2.0 and currentRatio is not None else 0)
 
     quickRatio = quick_ratio(stock)
-    features.append(1 if quickRatio > 1 else 0)
+    features.append(1 if quickRatio > 1 and quickRatio is not None else 0)
 
     debtEquity = debtEquityRatio(stock)
-    features.append(1 if 0.5 < debtEquity < 1.5 else 0)
+    features.append(1 if 0.5 < debtEquity < 1.5 and debtEquity is not None else 0)
 
     assetTurnover = getAssestTurnoverRatio(stock)
-    features.append(1 if assetTurnover > 1 else 0)
+    features.append(1 if assetTurnover > 1 and assetTurnover is not None else 0)
 
     _, SMA_20, SMA_50, SMA_100, SMA_200 = simpleMovingAverage(stock)  # You can use these later if needed
 
     npm = net_profit_margin(stock)
-    features.append(1 if npm > 0.1 else 0)
+    features.append(1 if npm > 0.1 and npm is not None else 0)
 
     priceEarningsRatio = get_price_earnings_ratio(stock)
-    features.append(1 if priceEarningsRatio < 15 else 0)
+    features.append(1 if priceEarningsRatio < 15 and priceEarningsRatio is not None else 0)
 
     volume = getVolume(stock)
-    features.append(1 if 400000 < volume < 20000000 else 0)
+    features.append(1 if 400000 < volume < 20000000 and volume is not None else 0)
 
     lowYear = yearLow(stock)
     low, high = percent_range(lowYear)
-    features.append(1 if low < lowYear < high else 0)
+    features.append(1 if low < lowYear < high and lowYear is not None else 0)
 
     return features
 
-
-
-
-# from sklearn.ensemble import RandomForestClassifier
-# from sklearn.model_selection import train_test_split
-#
-# df = pd.DataFrame(data)
-#
-# X = df.drop("label", axis=1)
-# y = df["label"]
-#
-# X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
-#
-# model = RandomForestClassifier()
-# model.fit(X_train, y_train)
-#
-# accuracy = model.score(X_test, y_test)
-# print(f"Model accuracy: {accuracy:.2f}")

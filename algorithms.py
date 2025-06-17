@@ -80,8 +80,8 @@ def simpleMovingAverage(stock): #Averages the Closing Price based on ___ # of da
 
 def SMA_slope_Trial(stock):
     """
-        Calculates SMAs and the slope of the 20-day SMA for a given stock.
-        """
+    Calculates SMAs and the slope of the 20-day SMA for a given stock.
+    """
     ticker_symbol = stock.getSymbol()
     data = yf.Ticker(ticker_symbol).history(period="1y", interval="1d", auto_adjust=True)
 
@@ -94,29 +94,19 @@ def SMA_slope_Trial(stock):
     data["SMA_100"] = data["Close"].rolling(window=100).mean()
     data["SMA_200"] = data["Close"].rolling(window=200).mean()
 
-    # Ensure at least two SMA_20 values for slope calculation
-    if len(data) < 2:
-        raise ValueError("Not enough data to compute SMA slope.")
+    # Ensure enough data for SMA_20 slope calculation
+    if len(data["SMA_20"].dropna()) < 2:
+        raise ValueError("Not enough SMA_20 data to compute slope.")
 
-    # Get the last two SMA_20 values
-    sma_20_current = data["SMA_20"]
-    sma_20_previous = (data["Close"].rolling(window=21) - stock.get).mean()
+    sma_20_current = data["SMA_20"].iloc[-1]
+    sma_20_previous = data["SMA_20"].iloc[-2]
 
-    # Calculate the slope as difference
+    print(data["SMA_20"])
+
     sma_20_slope = sma_20_current - sma_20_previous
 
-    # Prepare output
-    # df = pd.DataFrame({
-    #     "Current Price": stock.getPrice(),
-    #     "SMA_20": sma_20_current,
-    #     "SMA_50": data["SMA_50"].iloc[-1],
-    #     "SMA_100": data["SMA_100"].iloc[-1],
-    #     "SMA_200": data["SMA_200"].iloc[-1],
-    #     "SMA_20_Slope": sma_20_slope
-    # })
-
-    # return df
     return sma_20_slope
+
 
 
 def getCurrentYearEarnings(stock):

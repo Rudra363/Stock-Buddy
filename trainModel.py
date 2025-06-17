@@ -50,6 +50,7 @@ def load_model(filepath="stock_label_model.pkl"):
     Load a trained model from a file.
     """
     return joblib.load(filepath)
+
 if __name__ == "__main__":
     X, y = load_data("training_data.csv")
     model, X_test, y_test = train_model(X, y)

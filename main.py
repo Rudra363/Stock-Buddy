@@ -5,6 +5,12 @@ from trainModel import *
 
 def main():
     # Load the trained model
+   # csvTickers()
+   #  stock = Stocks("AAPL", 10)
+   #  slope = SMA_slope_Trial(stock)
+   #  print(slope)
+   #  print(stock.getPrice())
+
     model = load_model("stock_label_model.pkl")
 
     # List of stock symbols you want to test
