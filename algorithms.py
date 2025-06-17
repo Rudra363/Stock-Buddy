@@ -168,7 +168,7 @@ def getPreviousYearsEarnings(stock):
 
         return net_income
     except Exception as e:
-        print(f"Error fetching last year earnings: {e}")
+       # print(f"Error fetching last year earnings: {e}")
         return None
 
 
@@ -205,28 +205,10 @@ def getNetInsiderPurchases(stock):
             net_shares = net_row['Shares'].values[0]
             return float(net_shares)
         else:
-            return "Net Shares Purchased (Sold) data not available."
+            return 0
     except Exception as e:
         return f"Error retrieving net insider purchases: {e}"
 
-def getInsiderConfidence(stock):
-    net_shares = getNetInsiderPurchases(stock)
-
-    if net_shares is None:
-        return "Net insider purchase data not available."
-
-    if net_shares > 1_000_000:
-        confidence = "Very High insider confidence 🚀"
-    elif net_shares > 500_000:
-        confidence = "High insider confidence 👍"
-    elif net_shares > 100_000:
-        confidence = "Moderate insider confidence 🙂"
-    elif net_shares > 0:
-        confidence = "Slight insider confidence 🧐"
-    else:
-        confidence = "Low or negative insider confidence ⚠️"
-
-    return f"Net insider shares purchased: {int(net_shares):,} — {confidence}"
 
 
 
@@ -239,7 +221,7 @@ def getInsiderConfidence(stock):
   # 10 or more % usually good - for this use the most recent year but then also calculate prev year and see if its decline or increase - this tells u if the company is growing or not
 def net_profit_margin(stock):
     tot_rev = stock.getInfo().get("totalRevenue")
-    print(tot_rev)
+    #print(tot_rev)
     npm = getCurrentYearEarnings(stock)/tot_rev
     # if npm.round() >= 10:
     #     return True
@@ -251,45 +233,21 @@ def net_profit_margin(stock):
 def get_price_earnings_ratio(stock):
     priceEarningsRatio = stock.getInfo().get("trailingPE")
     return priceEarningsRatio
-   # stock_price = stock.getPrice()
-   # earningPerShare = stock.ticker.info.get("trailingEps")
-   # print(stock.ticker.info)
-   # print(stock_price, earningPerShare)
-   # price_earnings_ratio = stock_price//earningPerShare
-   # print(price_earnings_ratio)
-   # return price_earnings_ratio
 
 
 def return_on_investments(stock): # 15 or more % good
-    # se = stock.ticker.info.get['Total Stockholders Equity']
-    # roe = (stock.getCurrentYearEarnings()/se)*100
-    # print(roe)
     roe = stock.getInfo().get("returnOnEquity")
-    # if roe > 15:
-    #     return False
-    # return True
     return roe
 
 
 def get_return_on_assets(stock): # 5 or more % good
-    # total_assets = stock.ticker.balance_sheet.loc["Total Assets"].iloc[0]
-    # roa = (stock.getCurrentYearEarnings()/total_assets )*100
     roa = stock.getInfo().get("returnOnAssets")
-    print(roa)
-    # if roa >= 5:
-    #     return True
-    # return False
+    #print(roa)
     return roa
 
 def current_ratio(stock): # 1.2/1.4 - 2 is good - more doesnt mean good necessarily since it would mean they arent investing or selling much or whatver - careful
     current_ratio = stock.getInfo().get("currentRatio")
     return current_ratio
-    # print(cu)
-    # current_assests = balance_sheet.loc['Total Current Assests', latest_period]
-    # current_liabilities = balance_sheet.loc['Total Current Liabilities', latest_period]
-    # current_ratio = current_assets/current_liabilities
-
-
 
 # maybe quick ratio - anything 1 or higher
 def quick_ratio(stock):
@@ -316,13 +274,13 @@ def getAssestTurnoverRatio(stock):
     income_stmt = stock.getIncomeStatement()
     latest_column = income_stmt.columns[0]
     net_income = income_stmt.loc['Net Income', latest_column]
-    print("Net Income:", net_income)
+    #print("Net Income:", net_income)
     roa = get_return_on_assets(stock)
-    print("Return on Assets:", roa)
+    #print("Return on Assets:", roa)
     averageTotalAssests = net_income/roa
-    print("Average Total Assests:", averageTotalAssests)
+    #print("Average Total Assests:", averageTotalAssests)
     totalRevenue = stock.getInfo().get("totalRevenue")
-    print("Total Revenue:", totalRevenue)
+    #print("Total Revenue:", totalRevenue)
     assestTurnover = totalRevenue/averageTotalAssests
     #print("Assest Turnover:", assestTurnover)
     return assestTurnover
@@ -340,3 +298,23 @@ def yearHigh(stock):
 def inventory_turnover_ratio(stock):
     pass
     ## I need COGS divided by total inventory
+
+# def getInsiderConfidence(stock):
+#     net_shares = getNetInsiderPurchases(stock)
+#
+#     if net_shares is None:
+#         return "Net insider purchase data not available."
+#
+#     if net_shares > 1_000_000:
+#         confidence = "Very High insider confidence 🚀"
+#     elif net_shares > 500_000:
+#         confidence = "High insider confidence 👍"
+#     elif net_shares > 100_000:
+#         confidence = "Moderate insider confidence 🙂"
+#     elif net_shares > 0:
+#         confidence = "Slight insider confidence 🧐"
+#     else:
+#         confidence = "Low or negative insider confidence ⚠️"
+#
+#     return f"Net insider shares purchased: {int(net_shares):,} — {confidence}"
+

@@ -31,7 +31,7 @@ def defineLabel(stock):
     total += 1
 
     roa = get_return_on_assets(stock)  # 5 or more % good
-    if roa > 0.15:
+    if roa > 0.05:
         count += 1
     total += 1
 
@@ -91,8 +91,6 @@ def percent_range(value, percent=10):
     factor = percent / 100
     return value * (1 - factor), value * (1 + factor)
 
-
-
 def csvTickers():
     dataset = []
 
@@ -130,9 +128,6 @@ def csvTickers():
         ]
         writer.writerow(header)
         writer.writerows(dataset)
-
-
-
 
 def extractFeatures(stock):
     features = []
