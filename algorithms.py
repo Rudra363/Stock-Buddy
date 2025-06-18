@@ -2,6 +2,9 @@ from operator import truediv
 import pandas as pd
 import yfinance as yf
 from StocksClass import Stocks
+import yfinance as yf
+import pandas as pd
+import matplotlib.pyplot as plt
 
 def mostRecommendations(stock):
     rec_summary = stock.getRecommendationsSummary()
@@ -52,61 +55,104 @@ def getDividendYield(stock):
     #dividend_yield = stock.getInfo.get("dividendYield")
     return dividend_yield
 
-def simpleMovingAverage(stock): #Averages the Closing Price based on ___ # of days
+
+def sma(data, window):
+    return data["Close"].rolling(window=window).mean()
+
+def smaGraph(stock):
     ticker_symbol = stock.getSymbol()
-    data = yf.Ticker(ticker_symbol).history(period="1y", interval="1d", auto_adjust=True)
-    if data.empty:
-        raise ValueError(f"No data returned for {ticker_symbol}")
-    #data = yf.Ticker(stock.getSymbol()).history(stock, period="6mo", interval = "1d", auto_adjust=True)
-    data["SMA_20"] = data["Close"].rolling(window=20).mean()
-    data["SMA_50"] = data["Close"].rolling(window=50).mean()
-    data["SMA_100"] = data["Close"].rolling(window=100).mean()
-    data["SMA_200"] = data["Close"].rolling(window=200).mean()
-    df = pd.DataFrame({ #Creates a Table with Headers
-        "Current Price": stock.getPrice(),
-        "SMA_": ["20","50","100","200"],
-        "Closing Price Average": [data["SMA_20"].iloc[-1],data["SMA_50"].iloc[-1],data["SMA_100"].iloc[-1],data["SMA_200"].iloc[-1]]
-    })
-    #Golden Cross - Buy Signal ( short-term SMA passes above long-term SMA)
-    #TODO: try to use ML to teach computer how to read the graphs/trends
-    # if data["SMA_20"] > data["SMA_200"]:
-    #     print("Golden Cross: BUY SIGNAL")
-    # if data["SMA_20"] < data["SMA_200"]:
-    #     print("Death Cross: SELL SIGNAL")
-
-    return df, data["SMA_20"], data["SMA_50"], data["SMA_100"], data["SMA_200"]
-
-
-
-def SMA_slope_Trial(stock):
-    """
-    Calculates SMAs and the slope of the 20-day SMA for a given stock.
-    """
-    ticker_symbol = stock.getSymbol()
-    data = yf.Ticker(ticker_symbol).history(period="1y", interval="1d", auto_adjust=True)
+    data = stock.getHistoricalPrice(period="1y", interval="1d")
 
     if data.empty:
         raise ValueError(f"No data returned for {ticker_symbol}")
-
     # Calculate SMAs
-    data["SMA_20"] = data["Close"].rolling(window=20).mean()
-    data["SMA_50"] = data["Close"].rolling(window=50).mean()
-    data["SMA_100"] = data["Close"].rolling(window=100).mean()
-    data["SMA_200"] = data["Close"].rolling(window=200).mean()
+    data["SMA_20"] = sma(data, 20)
+    data["SMA_50"] = sma(data, 50)
+    data["SMA_100"] = sma(data, 100)
+    data["SMA_200"] = sma(data, 200)
+
+    # data['Buy_Signal'] = (data['MACD'] > data['Signal']) & (data['MACD'].shift() <= data['Signal'].shift())
+    # data['Sell_Signal'] = (data['MACD'] < data['Signal']) & (data['MACD'].shift() >= data['Signal'].shift())
+    #     """
+    #     Plots stock price along with SMA20, SMA50, SMA100, and SMA200.
+    #     """
+
+    plt.figure(figsize=(14, 7))
+
+    # Plot stock closing price
+    plt.plot(data.index, data["Close"], label="Close Price", linewidth=2)
+    # Plot SMAs if they exist
+    plt.plot(data["SMA_20"], label="SMA 20", linestyle='--', color="blue")
+    plt.plot(data.index, data["SMA_50"], label="SMA 50", linestyle='--', color="red")
+    plt.plot(data.index, data["SMA_100"], label="SMA 100", linestyle='--', color="green")
+    plt.plot(data.index, data["SMA_200"], label="SMA 200", linestyle='--', color="cyan")
+    plt.title('SMA Indicator')
+    plt.xlabel("Date")
+    plt.ylabel("Price")
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()
+    # plt.figure(figsize=(14,6))
+    # plt.plot(data['SMA_20'], label='SMA_20', color='blue')
+    # plt.plot(data['SMA_50'], label='SMA_50', color='red')
+    # plt.plot(data['SMA_100'], label='SMA_100', color='green')
+    # plt.plot(data['SMA_200'], label='SMA_200', color='yellow')
+    # plt.plot(stock.getHistoricalPrice(period = "1y", interval = "1d"), label='Signal Line', color='orange')
+    # #plt.bar(data.index, data['MACD'] - data['Signal'], label='Line', color='gray')
+    # plt.legend()
+
+    # plt.show()
+
+def SMA_slope(stock, window):
+    ticker_symbol = stock.getSymbol()
+    data = stock.getHistoricalPrice(period="1y", interval="1d")
+
+    if data.empty:
+        raise ValueError(f"No data returned for {ticker_symbol}")
+    #Calculate SMAs
+    data["SMA_Wanted"] = sma(data, window)
 
     # Ensure enough data for SMA_20 slope calculation
-    if len(data["SMA_20"].dropna()) < 2:
+    if len(data["SMA_Wanted"].dropna()) < 2:
         raise ValueError("Not enough SMA_20 data to compute slope.")
 
-    sma_20_current = data["SMA_20"].iloc[-1]
-    sma_20_previous = data["SMA_20"].iloc[-2]
+    current = data["SMA_Wanted"].iloc[-1]
+    previous = data["SMA_Wanted"].iloc[-2]
 
-    print(data["SMA_20"])
+    return current - previous
 
-    sma_20_slope = sma_20_current - sma_20_previous
 
-    return sma_20_slope
+def readSMA():
 
+    
+
+
+
+
+
+def getrsi(stock):
+    data = stock.getHistoricalPrice(period = "2mo", interval = "1d")
+    period = 14
+    data["Change"] = data["Close"].diff()
+    data["Gain"] = data["Change"].apply(lambda x: x if x > 0 else 0)
+    data["Loss"] = data["Change"].apply(lambda x: -x if x < 0 else 0)
+
+    # Average gains/losses over `period` days
+    avg_gain = data["Gain"].rolling(window=period).mean()
+    avg_loss = data["Loss"].rolling(window=period).mean()
+
+    # Relative Strength (RS)
+    rs = avg_gain / avg_loss
+
+    # RSI calculation
+    rsi = 100 - (100 / (1 + rs))
+    data["RSI"] = rsi
+
+    # Get latest RSI value
+    latest_rsi = data["RSI"].iloc[-1]
+
+    return latest_rsi
 
 
 def getCurrentYearEarnings(stock):
@@ -201,7 +247,6 @@ def getNetInsiderPurchases(stock):
 
 
 
-
 # COME BACK TO FUNDAMENTAL ANALYSIS - not hard jsut dont know what numbers to use ; maybe calculate for each prev year to predict pattern
 
 
@@ -249,16 +294,6 @@ def quick_ratio(stock):
 def debtEquityRatio(stock):
     return stock.getInfo().get("debtToEquity")
 
-
-# interest coverage ratio - 3 or more is solid
-def interestCoverage(stock):
-    #EBIT is in the new income statement one
-    pass
-
-
-# TODO: create ratios to see if stock is undervalued
-# P/E ratio (Done), EV/EBIT,. P/S ratio, insider buyinh,
-
 # asset turnover ratio - 1 or higher is better but depends on industry i think
 def getAssestTurnoverRatio(stock):
     income_stmt = stock.getIncomeStatement()
@@ -284,10 +319,52 @@ def yearLow(stock):
 def yearHigh(stock):
     return stock.getInfo().get("fiftyTwoWeekHigh")
 
+
+# MACD Line vs Signal Line:
+# 	•	When MACD crosses above the signal line → Bullish signal (price may rise)
+# 	•	When MACD crosses below the signal line → Bearish signal (price may fall)
+# 	2.	MACD Histogram:
+# 	•	The difference between the MACD and signal line.
+# 	•	Shows the momentum: larger bars mean stronger trends.
+def movingAverageConvergenceDivergence(stock):
+# Get stock data (e.g., Apple)
+    data = stock.getHistoricalPrice(period = "1mo", interval = "1d")
+    # Calculate MACD and Signal Line
+    ema12 = data['Close'].ewm(span=12, adjust=False).mean()
+    ema26 = data['Close'].ewm(span=26, adjust=False).mean()
+    data['MACD'] = ema12 - ema26
+    data['Signal'] = data['MACD'].ewm(span=9, adjust=False).mean()
+
+    # Generate Buy/Sell signals
+    data['Buy_Signal'] = (data['MACD'] > data['Signal']) & (data['MACD'].shift() <= data['Signal'].shift())
+    data['Sell_Signal'] = (data['MACD'] < data['Signal']) & (data['MACD'].shift() >= data['Signal'].shift())
+    plt.figure(figsize=(14,6))
+    plt.plot(data['MACD'], label='MACD', color='blue')
+    plt.plot(data['Signal'], label='Signal Line', color='orange')
+    plt.bar(data.index, data['MACD'] - data['Signal'], label='Histogram', color='gray')
+    plt.legend()
+    plt.title('MACD Indicator')
+    plt.show()
+
+    if data['Buy_Signal'].any():
+        print("Buy signal")
+        return True
+    elif data['Sell_Signal'].any():
+        print("Sell signal")
+        return False
+    else:
+        print("No signal/Hold")
+        return None
+
 # inventory turnover ratio - 5 to 10 is the common
 def inventory_turnover_ratio(stock):
     pass
     ## I need COGS divided by total inventory
+
+# interest coverage ratio - 3 or more is solid
+def interestCoverage(stock):
+    #EBIT is in the new income statement one
+    pass
 
 # def getInsiderConfidence(stock):
 #     net_shares = getNetInsiderPurchases(stock)
@@ -307,4 +384,28 @@ def inventory_turnover_ratio(stock):
 #         confidence = "Low or negative insider confidence ⚠️"
 #
 #     return f"Net insider shares purchased: {int(net_shares):,} — {confidence}"
+
+# def simpleMovingAverage(stock): #Averages the Closing Price based on ___ # of days
+#     ticker_symbol = stock.getSymbol()
+#     data = yf.Ticker(ticker_symbol).history(period="1y", interval="1d", auto_adjust=True)
+#     if data.empty:
+#         raise ValueError(f"No data returned for {ticker_symbol}")
+#     #data = yf.Ticker(stock.getSymbol()).history(stock, period="6mo", interval = "1d", auto_adjust=True)
+#     data["SMA_20"] = data["Close"].rolling(window=20).mean()
+#     data["SMA_50"] = data["Close"].rolling(window=50).mean()
+#     data["SMA_100"] = data["Close"].rolling(window=100).mean()
+#     data["SMA_200"] = data["Close"].rolling(window=200).mean()
+#     df = pd.DataFrame({ #Creates a Table with Headers
+#         "Current Price": stock.getPrice(),
+#         "SMA_": ["20","50","100","200"],
+#         "Closing Price Average": [data["SMA_20"].iloc[-1],data["SMA_50"].iloc[-1],data["SMA_100"].iloc[-1],data["SMA_200"].iloc[-1]]
+#     })
+#     #Golden Cross - Buy Signal ( short-term SMA passes above long-term SMA)
+#     #TODO: try to use ML to teach computer how to read the graphs/trends
+#     # if data["SMA_20"] > data["SMA_200"]:
+#     #     print("Golden Cross: BUY SIGNAL")
+#     # if data["SMA_20"] < data["SMA_200"]:
+#     #     print("Death Cross: SELL SIGNAL")
+#
+#     return df, data["SMA_20"], data["SMA_50"], data["SMA_100"], data["SMA_200"]
 

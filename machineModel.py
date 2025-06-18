@@ -55,7 +55,7 @@ def defineLabel(stock):
         count += 1
     total += 1
 
-    df, SMA_20, SMA_50, SMA_100, SMA_200 = simpleMovingAverage(stock)
+   # df, SMA_20, SMA_50, SMA_100, SMA_200 = SMA_slope(stock)
 
     npm = net_profit_margin(stock) # 10 or more % usually good
     if npm > 0.1 and npm is not None:
@@ -77,6 +77,16 @@ def defineLabel(stock):
     if low < lowYear < high and lowYear is not None:
         count += 1
     total += 1
+
+    # rsi = getrsi(stock)
+    # if rsi < 30 and rsi is not None:
+    #     count += 1
+    # total += 1
+    #
+    # macd = movingAverageConvergenceDivergence(stock)
+    # if macd is True and macd is not None:
+    #     count += 1
+    # total += 1
 
     #highYear = yearHigh(stock)
 
@@ -124,10 +134,16 @@ def csvTickers():
         header = [
             "recommendation", "dividend", "growth", "insider", "roe", "roa",
             "current_ratio", "quick_ratio", "debt_equity", "asset_turnover",
-            "net_profit_margin", "pe_ratio", "volume", "year_low_in_range", "label"
+            "net_profit_margin", "pe_ratio", "volume", "year_low_in_range", "rsi", "macd", "label"
         ]
         writer.writerow(header)
         writer.writerows(dataset)
+
+def safe_float(value):
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
 
 def extractFeatures(stock):
     features = []
@@ -135,47 +151,48 @@ def extractFeatures(stock):
     rating, percentage = mostRecommendations(stock)
     features.append(1 if rating in ["strongBuy", "buy"] and percentage is not None and percentage >= 50 else 0)
 
-    dividend = getDividendYield(stock)
-    features.append(1 if 0.4 < dividend < 0.6 and dividend is not None else 0)
+    dividend = safe_float(getDividendYield(stock))
+    features.append(1 if dividend is not None and 0.4 < dividend < 0.6 else 0)
 
-    growth = getNextYearGrowth(stock)
-    features.append(1 if growth > 0.1 and growth is not None else 0)
+    growth = safe_float(getNextYearGrowth(stock))
+    features.append(1 if growth is not None and growth > 0.1 else 0)
 
-    insiderMoney = getNetInsiderPurchases(stock)
-    features.append(1 if insiderMoney > 100000 and insiderMoney is not None else 0)
+    insiderMoney = safe_float(getNetInsiderPurchases(stock))
+    features.append(1 if insiderMoney is not None and insiderMoney > 100000 else 0)
 
-    roe = return_on_investments(stock)
-    features.append(1 if roe > 0.15 and roe is not None else 0)
+    roe = safe_float(return_on_investments(stock))
+    features.append(1 if roe is not None and roe > 0.15 else 0)
 
-    roa = get_return_on_assets(stock)
-    features.append(1 if roa > 0.15 and roa is not None else 0)
+    roa = safe_float(get_return_on_assets(stock))
+    features.append(1 if roa is not None and roa > 0.15 else 0)
 
-    currentRatio = current_ratio(stock)
-    features.append(1 if 1.5 <= currentRatio <= 2.0 and currentRatio is not None else 0)
+    currentRatio = safe_float(current_ratio(stock))
+    features.append(1 if currentRatio is not None and 1.5 <= currentRatio <= 2.0 else 0)
 
-    quickRatio = quick_ratio(stock)
-    features.append(1 if quickRatio > 1 and quickRatio is not None else 0)
+    quickRatio = safe_float(quick_ratio(stock))
+    features.append(1 if quickRatio is not None and quickRatio > 1 else 0)
 
-    debtEquity = debtEquityRatio(stock)
-    features.append(1 if 0.5 < debtEquity < 1.5 and debtEquity is not None else 0)
+    debtEquity = safe_float(debtEquityRatio(stock))
+    features.append(1 if debtEquity is not None and 0.5 < debtEquity < 1.5 else 0)
 
-    assetTurnover = getAssestTurnoverRatio(stock)
-    features.append(1 if assetTurnover > 1 and assetTurnover is not None else 0)
+    assetTurnover = safe_float(getAssestTurnoverRatio(stock))
+    features.append(1 if assetTurnover is not None and assetTurnover > 1 else 0)
 
-    _, SMA_20, SMA_50, SMA_100, SMA_200 = simpleMovingAverage(stock)  # You can use these later if needed
+    npm = safe_float(net_profit_margin(stock))
+    features.append(1 if npm is not None and npm > 0.1 else 0)
 
-    npm = net_profit_margin(stock)
-    features.append(1 if npm > 0.1 and npm is not None else 0)
+    priceEarningsRatio = safe_float(get_price_earnings_ratio(stock))
+    features.append(1 if priceEarningsRatio is not None and priceEarningsRatio < 15 else 0)
 
-    priceEarningsRatio = get_price_earnings_ratio(stock)
-    features.append(1 if priceEarningsRatio < 15 and priceEarningsRatio is not None else 0)
+    volume = safe_float(getVolume(stock))
+    features.append(1 if volume is not None and 400000 < volume < 20000000 else 0)
 
-    volume = getVolume(stock)
-    features.append(1 if 400000 < volume < 20000000 and volume is not None else 0)
-
-    lowYear = yearLow(stock)
-    low, high = percent_range(lowYear)
-    features.append(1 if low < lowYear < high and lowYear is not None else 0)
+    lowYear = safe_float(yearLow(stock))
+    if lowYear is not None:
+        low, high = percent_range(lowYear)
+        features.append(1 if low < lowYear < high else 0)
+    else:
+        features.append(0)
 
     return features
 

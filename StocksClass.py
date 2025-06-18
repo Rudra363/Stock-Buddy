@@ -76,3 +76,6 @@ class Stocks:
 
     def getIncomeStatement(self):
         return self.ticker.incomestmt
+
+    def getHistoricalPrice(self, period, interval):
+        return self.ticker.history(period=period, interval=interval)
