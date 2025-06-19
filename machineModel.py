@@ -3,99 +3,119 @@ from algorithms import *
 from StocksClass import *
 
 def defineLabel(stock):
-    count = 0
+    weights = {
+        "recommendation": 2,
+        "dividend": 1,
+        "growth": 2,
+        "insider": 3,
+        "roe": 3,
+        "roa": 3,
+        "current_ratio": 1,
+        "quick_ratio": 1,
+        "debt_equity": 1,
+        "asset_turnover": 1,
+        "net_profit_margin": 2,
+        "pe_ratio": 3,
+        "volume": 2,
+        "year_low_in_range": 1,
+        "rsi": 3,
+        "macd": 2,
+        "sma": 3
+    }
+
+    score = 0
     total = 0
+
     rating, percentage = mostRecommendations(stock)
     if rating in ["strongBuy", "buy"] and percentage is not None and percentage >= 50:
-        count += 1
-    total += 1
+        score += weights["recommendation"]
+    total += weights["recommendation"]
 
     dividend = getDividendYield(stock)
-    if 0.4 < dividend < 0.6  :
-        count += 1
-    total += 1
+    if dividend is not None and 0.4 < dividend < 0.6:
+        score += weights["dividend"]
+    total += weights["dividend"]
 
     growth = getNextYearGrowth(stock)
-    if growth > 0.1 and growth is not None:
-        count += 1
-    total += 1
+    if growth is not None and growth > 0.1:
+        score += weights["growth"]
+    total += weights["growth"]
 
     insiderMoney = getNetInsiderPurchases(stock)
-    if insiderMoney > 100000 and insiderMoney is not None:
-        count += 1
-    total += 1
+    if insiderMoney is not None and insiderMoney > 100000:
+        score += weights["insider"]
+    total += weights["insider"]
 
-    roe = return_on_investments(stock) # 15 or more % good
-    if roe > 0.15 and roe is not None:
-        count += 1
-    total += 1
+    roe = return_on_investments(stock)
+    if roe is not None and roe > 0.15:
+        score += weights["roe"]
+    total += weights["roe"]
 
-    roa = get_return_on_assets(stock)  # 5 or more % good
-    if roa > 0.05 and roa is not None:
-        count += 1
-    total += 1
+    roa = get_return_on_assets(stock)
+    if roa is not None and roa > 0.05:
+        score += weights["roa"]
+    total += weights["roa"]
 
-    currentRatio = current_ratio(stock) # 1.2/1.4 - 2 is good - more doesnt mean good necessarily since it would mean they arent investing or selling much or whatver - careful
-    if 1.5 <= currentRatio <= 2.0 and currentRatio is not None:
-        count += 1
-    total += 1
+    currentRatio = current_ratio(stock)
+    if currentRatio is not None and 1.5 <= currentRatio <= 2.0:
+        score += weights["current_ratio"]
+    total += weights["current_ratio"]
 
-    quickRatio = quick_ratio(stock) #anything 1 or higher
-    if quickRatio > 1 and quickRatio is not None:
-        count += 1
-    total += 1
+    quickRatio = quick_ratio(stock)
+    if quickRatio is not None and quickRatio > 1:
+        score += weights["quick_ratio"]
+    total += weights["quick_ratio"]
 
-    debtEquity = debtEquityRatio(stock)  #0.5 to 1.5 is considered fine
-    if 0.5 < debtEquity < 1.5 and debtEquity is not None:
-        count += 1
-    total += 1
+    debtEquity = debtEquityRatio(stock)
+    if debtEquity is not None and 0.5 < debtEquity < 1.5:
+        score += weights["debt_equity"]
+    total += weights["debt_equity"]
 
-    assetTurnover = getAssestTurnoverRatio(stock) #asset turnover ratio - 1 or higher is better but depends on industry i think
-    if assetTurnover > 1 and assetTurnover is not None:
-        count += 1
-    total += 1
+    assetTurnover = getAssestTurnoverRatio(stock)
+    if assetTurnover is not None and assetTurnover > 1:
+        score += weights["asset_turnover"]
+    total += weights["asset_turnover"]
 
-   # df, SMA_20, SMA_50, SMA_100, SMA_200 = SMA_slope(stock)
+    npm = net_profit_margin(stock)
+    if npm is not None and npm > 0.1:
+        score += weights["net_profit_margin"]
+    total += weights["net_profit_margin"]
 
-    npm = net_profit_margin(stock) # 10 or more % usually good
-    if npm > 0.1 and npm is not None:
-        count += 1
-    total += 1
-
-    priceEarningsRatio = get_price_earnings_ratio(stock) # below 15 is good but the average is 20 25
-    if priceEarningsRatio < 15 and priceEarningsRatio is not None:
-        count += 1
-    total += 1
+    priceEarningsRatio = get_price_earnings_ratio(stock)
+    if priceEarningsRatio is not None and priceEarningsRatio < 15:
+        score += weights["pe_ratio"]
+    total += weights["pe_ratio"]
 
     volume = getVolume(stock)
-    if 400000 < volume < 20000000 and volume is not None:
-        count += 1
-    total += 1
+    if volume is not None and 400000 < volume < 20000000:
+        score += weights["volume"]
+    total += weights["volume"]
 
     lowYear = yearLow(stock)
-    low, high = percent_range(lowYear)
-    if low < lowYear < high and lowYear is not None:
-        count += 1
-    total += 1
+    if lowYear is not None:
+        low, high = percent_range(lowYear)
+        if low < lowYear < high:
+            score += weights["year_low_in_range"]
+        total += weights["year_low_in_range"]
 
     # rsi = getrsi(stock)
-    # if rsi < 30 and rsi is not None:
-    #     count += 1
-    # total += 1
+    # if rsi is not None and rsi < 30:
+    #     score += weights["rsi"]
+    # total += weights["rsi"]
     #
     # macd = movingAverageConvergenceDivergence(stock)
-    # if macd is True and macd is not None:
-    #     count += 1
-    # total += 1
+    # if macd is not None and macd is True:
+    #     score += weights["macd"]
+    # total += weights["macd"]
+    #
+    # sma = readSMA(stock)
+    # if sma is not None and sma is True:
+    #     score += weights["sma"]
+    # total += weights["sma"]
 
-    #highYear = yearHigh(stock)
+    # Final label decision
+    return 1 if score / total >= 0.6 else 0
 
-    if count/total >= 0.7:
-        label = 1
-    else:
-        label = 0
-
-    return label
 
 def percent_range(value, percent=10):
     factor = percent / 100
@@ -193,6 +213,15 @@ def extractFeatures(stock):
         features.append(1 if low < lowYear < high else 0)
     else:
         features.append(0)
+
+    # rsi = safe_float(getrsi(stock))
+    # features.append(1 if rsi is not None and rsi < 30 else 0)
+    # #
+    # macd = safe_float(movingAverageConvergenceDivergence(stock))
+    # features.append(1 if macd is not None and macd is True else 0)
+    # #
+    # sma = safe_float(readSMA(stock))
+    # features.append(1 if sma is True and sma is not None else 0)
 
     return features
 

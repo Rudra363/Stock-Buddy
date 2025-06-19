@@ -1,6 +1,5 @@
 from operator import truediv
-import pandas as pd
-import yfinance as yf
+import numpy as np
 from StocksClass import Stocks
 import yfinance as yf
 import pandas as pd
@@ -104,7 +103,7 @@ def smaGraph(stock):
 
     # plt.show()
 
-def SMA_slope(stock, window):
+def SMA_current_slope(stock, window):
     ticker_symbol = stock.getSymbol()
     data = stock.getHistoricalPrice(period="1y", interval="1d")
 
@@ -120,15 +119,118 @@ def SMA_slope(stock, window):
     current = data["SMA_Wanted"].iloc[-1]
     previous = data["SMA_Wanted"].iloc[-2]
 
-    return current - previous
+    return (current - previous)
 
+def SMA_previous_slope(stock, window, daysAwayFromToday):
+    ticker_symbol = stock.getSymbol()
+    data = stock.getHistoricalPrice(period="1y", interval="1d")
 
-def readSMA():
+    if data.empty:
+        raise ValueError(f"No data returned for {ticker_symbol}")
+    #Calculate SMAs
+    data["SMA_Wanted"] = sma(data, window)
 
-    
+    # Ensure enough data for SMA_20 slope calculation
+    if len(data["SMA_Wanted"].dropna()) < 2:
+        raise ValueError("Not enough SMA_20 data to compute slope.")
 
+    current = data["SMA_Wanted"].iloc[-(daysAwayFromToday)]
+    previous = data["SMA_Wanted"].iloc[-(daysAwayFromToday+1)]
 
+    return (current - previous)
 
+def readSMA(stock):
+    """
+    Computes SMA20, 50, 100, and 200, their current values,
+    slopes, and basic trend signals (Golden/Death crosses).
+    Returns a summary dict.
+    """
+    # Get historical data
+    data = stock.getHistoricalPrice(period="1y", interval="1d")
+    if data.empty:
+        raise ValueError(f"No data for {stock.getSymbol()}")
+
+    # Compute SMAs
+    for window in [20, 50, 100, 200]:
+        data[f"SMA_{window}"] = sma(data, window)
+
+    # Get latest SMA values
+    latest = {w: data[f"SMA_{w}"].iloc[-1] for w in [20, 50, 100, 200]}
+
+    # Compute slopes (difference between last two values)
+    slopes = {}
+    for window in [20, 50, 100, 200]:
+        col = f"SMA_{window}"
+        if data[col].dropna().size < 2:
+            slopes[window] = None
+        else:
+            slopes[window] = data[col].iloc[-1] - data[col].iloc[-2]
+
+    # Check cross signals (using 20 & 50 vs 200)
+    signals = []
+    #if Sma under price & slope == strong positive slope then bullish
+    if data["SMA_50"].iloc[-1] <= data["Close"].iloc[-1] and SMA_current_slope(stock, 50)>0:
+        signals.append("Bullish Behaviour")
+        print("trigger1")
+        return True
+    #if Sma over price & slope == strong negative slope then bearish
+    if data["SMA_50"].iloc[-1] >= data["Close"].iloc[-1] and SMA_current_slope(stock, 50)<0:
+        signals.append("Bearish Behaviour")
+        print("trigger2")
+        return False
+    #if sma intersects price from below = bearish
+    TOLERANCE = 0.5
+    # Treat as intersecting (crossover signal)
+    if np.isclose(data["SMA_50"].iloc[-1], data["Close"].iloc[-1], atol=TOLERANCE) and SMA_current_slope(stock, 20)>0:
+        print("Bearish Behaviour")
+        print("trigger3")
+        return False
+    #if sma intersects price from above = bullish
+    if np.isclose(data["SMA_50"].iloc[-1],data["Close"].iloc[-1], atol=TOLERANCE) and SMA_current_slope(stock, 50)<0:
+        print("Bullish Behaviour")
+        print("trigger4")
+        return True
+
+    if SMA_current_slope(stock, 50) == 0:
+        #if slope apporach zero from incresing then bearish
+        if SMA_previous_slope(stock, 50, 2) > 0:
+            signals.append("Bearish Behaviour")
+            print("trigger5")
+            return False
+        # if slope approach zero form decreasing then bullish
+        if SMA_previous_slope(stock, 50,2) < 0:
+            signals.append("Bullish Behaviour")
+            print("trigger6")
+            return True
+
+    # Golden cross: short-term crossing above long-term (50 > 200)
+    if data["SMA_20"].iloc[-2] <= data["SMA_200"].iloc[-2] and data["SMA_20"].iloc[-1] > data["SMA_200"].iloc[-1]:
+        signals.append("Golden Cross (20 over 200)")
+        return True
+    if data["SMA_50"].iloc[-2] <= data["SMA_200"].iloc[-2] and data["SMA_50"].iloc[-1] > data["SMA_200"].iloc[-1]:
+        signals.append("Golden Cross (50 over 200)")
+        return True
+
+    # Death cross (200 < 50)
+    if data["SMA_20"].iloc[-2] >= data["SMA_200"].iloc[-2] and latest[20] < latest[200]:
+        signals.append("Death Cross (20 below 200)")
+        return False
+    if data["SMA_50"].iloc[-2] >= data["SMA_200"].iloc[-2] and latest[50] < latest[200]:
+        signals.append("Death Cross (50 below 200)")
+        return False
+
+    # Price relative to SMAs
+    price = data["Close"].iloc[-1]
+    price_vs = {w: "above" if price > latest[w] else "below" for w in latest}
+    return signals
+
+    # return {
+    #     "symbol": stock.getSymbol(),
+    #     "latest_sma": latest,
+    #     "slopes": slopes,
+    #     "price_vs_sma": price_vs,
+    #     "signals": signals
+    # }
 
 
 def getrsi(stock):
@@ -408,4 +510,3 @@ def interestCoverage(stock):
 #     #     print("Death Cross: SELL SIGNAL")
 #
 #     return df, data["SMA_20"], data["SMA_50"], data["SMA_100"], data["SMA_200"]
-

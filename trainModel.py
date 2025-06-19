@@ -14,7 +14,6 @@ def load_data(filepath="training_data.csv"):
     y = df["label"]
     return X, y
 
-
 def train_model(X, y, test_size=0.2, random_state=42):
     """
     Split data, train Random Forest model, return trained model and test data.

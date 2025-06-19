@@ -3,8 +3,10 @@ import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import precision_score
 
-# List of stock symbols to analyze
-#stock_symbols = ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA']  # Extend as needed
+#TODO: Things to work on if or when needed
+#   - Big O is logarithmic making run time long
+#   - line 34 copies data from 1990 onwards, turn it into a ratio instead like maybe : 50% of data if company older than X years and all data if 10 year or less
+#   - Increase precision score - make it more accurate - add more indicators
 
 # Dictionary to store results
 stock_results = {}
@@ -71,7 +73,7 @@ def run(stock):
     df, predictors = process_stock(download_stock_data(symbol))
 
 
-    if symbol in stock_results:
+    if symbol in stock_results and stock_results[symbol]['latest_date'] == df.index[-1]:
         return stock_results[symbol]
 
 
