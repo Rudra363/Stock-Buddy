@@ -51,6 +51,15 @@ def load_model(filepath="stock_label_model.pkl"):
     """
     return joblib.load(filepath)
 
+
+if __name__ == "__main__":
+    X, y = load_data("training_data.csv")
+    model, X_test, y_test = train_model(X, y)
+    evaluate_model(model, X_test, y_test)
+    save_model(model, "stock_label_model.pkl")
+
+
+
 # def stackingModel(random_state=42):
 #     """
 #     Create a stacking classifier with two Random Forests and a Logistic Regression meta-model.
@@ -66,9 +75,3 @@ def load_model(filepath="stock_label_model.pkl"):
 #         cv=2  # 5-fold cross-validation for meta-model training
 #     )
 #     return stacking_model
-
-if __name__ == "__main__":
-    X, y = load_data("training_data.csv")
-    model, X_test, y_test = train_model(X, y)
-    evaluate_model(model, X_test, y_test)
-    save_model(model, "stock_label_model.pkl")

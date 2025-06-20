@@ -3,12 +3,27 @@ from StocksClass import Stocks
 from machineModel import *
 from trainModel import *
 from stock_forecast import *
+from dateutil.parser import parse
 
 def main():
     #Load the trained model
-    csvTickers()
+   # csvTickers()
 
-   # stock = Stocks("AAPL", 10)
+
+
+    stock = Stocks("AAPL", 10)
+    news_items = stock.getNews()
+
+    for item in news_items:
+        try:
+            title = item["content"]["title"]
+            date = item["content"]["pubDate"]
+            # Optional: format date to something like 'June 20, 2025'
+            formatted_date = parse(date).strftime('%B %d, %Y %H:%M')
+            print(f"{formatted_date} — {title}")
+        except KeyError:
+            continue
+
     # print(SMA_slope(stock, 20))
     # movingAverageConvergenceDivergence(stock)
    # print(run(stock))
@@ -20,7 +35,8 @@ def main():
    #  model = load_model("stock_label_model.pkl")
    # #
    #  # List of stock symbols you want to test
-   #  symbols_to_test = ["AAPL", "MSFT", "TSLA", "GOOG", "AMZN"]
+   #  #symbols_to_test = ["AAPL", "MSFT", "TSLA", "GOOG", "AMZN"]
+   #  symbols_to_test = ["BA", "NVDA", "SBUX", "TU"]
    #
    #  features_list = []
    #  trend_predictions = []  # New list

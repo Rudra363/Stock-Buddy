@@ -455,6 +455,16 @@ def movingAverageConvergenceDivergence(stock):
         #print("No signal/Hold")
         return None
 
+def newsAlgorithm(stock):
+    news_items = stock.getNews()
+
+    for item in news_items:
+        try:
+            title = item["content"]["title"]
+            print(title)
+        except KeyError:
+            print("Title not found in:", item)
+
 # inventory turnover ratio - 5 to 10 is the common
 def inventory_turnover_ratio(stock):
     pass
