@@ -6,9 +6,9 @@ from stock_forecast import *
 
 def main():
     #Load the trained model
-    # csvTickers()
+    csvTickers()
 
-    stock = Stocks("AAPL", 10)
+   # stock = Stocks("AAPL", 10)
     # print(SMA_slope(stock, 20))
     # movingAverageConvergenceDivergence(stock)
    # print(run(stock))
@@ -17,49 +17,50 @@ def main():
    # predicted_increase = run(stock)
 
 
-    model = load_model("stock_label_model.pkl")
+   #  model = load_model("stock_label_model.pkl")
+   # #
+   #  # List of stock symbols you want to test
+   #  symbols_to_test = ["AAPL", "MSFT", "TSLA", "GOOG", "AMZN"]
    #
-    # List of stock symbols you want to test
-    symbols_to_test = ["AAPL", "MSFT", "TSLA", "GOOG", "AMZN"]
-
-    features_list = []
-    trend_predictions = []  # New list
-
-    for symbol in symbols_to_test:
-        try:
-            stock = Stocks(symbol, 10)
-            features = extractFeatures(stock)
-            features_list.append(features)
-
-            predicted_increase = run(stock)
-            trend_predictions.append(predicted_increase)  # Save per stock
-
-        except Exception as e:
-            print(f"Error processing {symbol}: {e}")
-            trend_predictions.append(False)  # Maintain index alignment
-
-    if features_list:
-        import numpy as np
-        X_new = np.array(features_list)
-        predictions = model.predict(X_new)
-
-        for sym, pred, trend in zip(symbols_to_test, predictions, trend_predictions):
-            print(f"DEBUG: {sym} | Model: {pred} | Trend: {trend}")
-            if pred == 1 and trend:
-                print(f"✅ Stock: {sym} --> Strong signal (Model=1, Trend=True)")
-            elif pred == 1:
-                print(f"➕ Stock: {sym} --> Model says buy, but trend uncertain")
-            elif trend:
-                print(f"⚠️ Stock: {sym} --> Trend looks good, but model disagrees")
-            else:
-                print(f"❌ Stock: {sym} --> No signal")
-
-    else:
-        print("No valid stock features to predict.")
-
-    X, y = load_data("training_data.csv")
-    model, X_test, y_test = train_model(X, y)
-    evaluate_model(model, X_test, y_test)
+   #  features_list = []
+   #  trend_predictions = []  # New list
+   #
+   #  for symbol in symbols_to_test:
+   #      try:
+   #          stock = Stocks(symbol, 10)
+   #          features = extractFeatures(stock)
+   #          features_list.append(features)
+   #
+   #          predicted_increase = run(stock)
+   #          #print("predicted_increase",predicted_increase)
+   #          trend_predictions.append(predicted_increase)  # Save per stock
+   #
+   #      except Exception as e:
+   #          print(f"Error processing {symbol}: {e}")
+   #          trend_predictions.append(False)  # Maintain index alignment
+   #
+   #  if features_list:
+   #      import numpy as np
+   #      X_new = np.array(features_list)
+   #      predictions = model.predict(X_new)
+   #
+   #      for sym, pred, trend in zip(symbols_to_test, predictions, trend_predictions):
+   #          print(f"DEBUG: {sym} | Model: {pred} | Trend: {trend}")
+   #          if pred == 1 and trend:
+   #              print(f"✅ Stock: {sym} --> Strong signal (Model=1, Trend=True)")
+   #          elif pred == 1:
+   #              print(f"➕ Stock: {sym} --> Model says buy, but trend uncertain")
+   #          elif trend:
+   #              print(f"⚠️ Stock: {sym} --> Trend looks good, but model disagrees")
+   #          else:
+   #              print(f"❌ Stock: {sym} --> No signal")
+   #
+   #  else:
+   #      print("No valid stock features to predict.")
+   #
+   #  X, y = load_data("training_data.csv")
+   #  model, X_test, y_test = train_model(X, y)
+   #  evaluate_model(model, X_test, y_test)
 
 if __name__ == "__main__":
     main()

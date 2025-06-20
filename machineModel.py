@@ -98,20 +98,20 @@ def defineLabel(stock):
             score += weights["year_low_in_range"]
         total += weights["year_low_in_range"]
 
-    # rsi = getrsi(stock)
-    # if rsi is not None and rsi < 30:
-    #     score += weights["rsi"]
-    # total += weights["rsi"]
-    #
-    # macd = movingAverageConvergenceDivergence(stock)
-    # if macd is not None and macd is True:
-    #     score += weights["macd"]
-    # total += weights["macd"]
-    #
-    # sma = readSMA(stock)
-    # if sma is not None and sma is True:
-    #     score += weights["sma"]
-    # total += weights["sma"]
+    rsi = getrsi(stock)
+    if rsi is not None and rsi < 30:
+        score += weights["rsi"]
+    total += weights["rsi"]
+
+    macd = movingAverageConvergenceDivergence(stock)
+    if macd is not None and macd is True:
+        score += weights["macd"]
+    total += weights["macd"]
+
+    sma = readSMA(stock)
+    if sma is not None and sma is True:
+        score += weights["sma"]
+    total += weights["sma"]
 
     # Final label decision
     return 1 if score / total >= 0.6 else 0
@@ -141,7 +141,7 @@ def csvTickers():
                 dataset.append(features + [label])
 
                 count += 1
-                if count >= 9000:
+                if count >= 9300:
                     break  # Stop after processing 5 stocks
 
             except Exception as e:
@@ -154,7 +154,7 @@ def csvTickers():
         header = [
             "recommendation", "dividend", "growth", "insider", "roe", "roa",
             "current_ratio", "quick_ratio", "debt_equity", "asset_turnover",
-            "net_profit_margin", "pe_ratio", "volume", "year_low_in_range", "rsi", "macd", "label"
+            "net_profit_margin", "pe_ratio", "volume", "year_low_in_range", "rsi", "macd", "sma", "label"
         ]
         writer.writerow(header)
         writer.writerows(dataset)
@@ -214,14 +214,14 @@ def extractFeatures(stock):
     else:
         features.append(0)
 
-    # rsi = safe_float(getrsi(stock))
-    # features.append(1 if rsi is not None and rsi < 30 else 0)
-    # #
-    # macd = safe_float(movingAverageConvergenceDivergence(stock))
-    # features.append(1 if macd is not None and macd is True else 0)
-    # #
-    # sma = safe_float(readSMA(stock))
-    # features.append(1 if sma is True and sma is not None else 0)
+    rsi = safe_float(getrsi(stock))
+    features.append(1 if rsi is not None and rsi < 30 else 0)
+    #
+    macd = safe_float(movingAverageConvergenceDivergence(stock))
+    features.append(1 if macd is not None and macd is True else 0)
+    #
+    sma = safe_float(readSMA(stock))
+    features.append(1 if sma is True and sma is not None else 0)
 
     return features
 

@@ -171,36 +171,36 @@ def readSMA(stock):
     #if Sma under price & slope == strong positive slope then bullish
     if data["SMA_50"].iloc[-1] <= data["Close"].iloc[-1] and SMA_current_slope(stock, 50)>0:
         signals.append("Bullish Behaviour")
-        print("trigger1")
+       # print("trigger1")
         return True
     #if Sma over price & slope == strong negative slope then bearish
     if data["SMA_50"].iloc[-1] >= data["Close"].iloc[-1] and SMA_current_slope(stock, 50)<0:
         signals.append("Bearish Behaviour")
-        print("trigger2")
+       # print("trigger2")
         return False
     #if sma intersects price from below = bearish
     TOLERANCE = 0.5
     # Treat as intersecting (crossover signal)
     if np.isclose(data["SMA_50"].iloc[-1], data["Close"].iloc[-1], atol=TOLERANCE) and SMA_current_slope(stock, 20)>0:
-        print("Bearish Behaviour")
-        print("trigger3")
+       # print("Bearish Behaviour")
+       # print("trigger3")
         return False
     #if sma intersects price from above = bullish
     if np.isclose(data["SMA_50"].iloc[-1],data["Close"].iloc[-1], atol=TOLERANCE) and SMA_current_slope(stock, 50)<0:
-        print("Bullish Behaviour")
-        print("trigger4")
+       # print("Bullish Behaviour")
+        #print("trigger4")
         return True
 
     if SMA_current_slope(stock, 50) == 0:
         #if slope apporach zero from incresing then bearish
         if SMA_previous_slope(stock, 50, 2) > 0:
             signals.append("Bearish Behaviour")
-            print("trigger5")
+            #print("trigger5")
             return False
         # if slope approach zero form decreasing then bullish
         if SMA_previous_slope(stock, 50,2) < 0:
             signals.append("Bullish Behaviour")
-            print("trigger6")
+           # print("trigger6")
             return True
 
     # Golden cross: short-term crossing above long-term (50 > 200)
@@ -376,7 +376,6 @@ def return_on_investments(stock): # 15 or more % good
     roe = stock.getInfo().get("returnOnEquity")
     return roe
 
-
 def get_return_on_assets(stock): # 5 or more % good
     roa = stock.getInfo().get("returnOnAssets")
     #print(roa)
@@ -390,7 +389,6 @@ def current_ratio(stock): # 1.2/1.4 - 2 is good - more doesnt mean good necessar
 def quick_ratio(stock):
     quickRatio = stock.getInfo().get("quickRatio")
     return quickRatio
-
 
 # debt to equity ratio - 0.5 to 1.5 is considered fine
 def debtEquityRatio(stock):
@@ -421,7 +419,6 @@ def yearLow(stock):
 def yearHigh(stock):
     return stock.getInfo().get("fiftyTwoWeekHigh")
 
-
 # MACD Line vs Signal Line:
 # 	•	When MACD crosses above the signal line → Bullish signal (price may rise)
 # 	•	When MACD crosses below the signal line → Bearish signal (price may fall)
@@ -449,13 +446,13 @@ def movingAverageConvergenceDivergence(stock):
     plt.show()
 
     if data['Buy_Signal'].any():
-        print("Buy signal")
+       # print("Buy signal")
         return True
     elif data['Sell_Signal'].any():
-        print("Sell signal")
+        #print("Sell signal")
         return False
     else:
-        print("No signal/Hold")
+        #print("No signal/Hold")
         return None
 
 # inventory turnover ratio - 5 to 10 is the common

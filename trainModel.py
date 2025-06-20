@@ -1,5 +1,6 @@
 import pandas as pd
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import RandomForestClassifier, StackingClassifier
+from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, classification_report
 import joblib
@@ -49,6 +50,22 @@ def load_model(filepath="stock_label_model.pkl"):
     Load a trained model from a file.
     """
     return joblib.load(filepath)
+
+# def stackingModel(random_state=42):
+#     """
+#     Create a stacking classifier with two Random Forests and a Logistic Regression meta-model.
+#     """
+#     base_learners = [
+#         ('rf1', RandomForestClassifier(n_estimators=100, max_depth=1, random_state=random_state)),
+#         ('rf2', RandomForestClassifier(n_estimators=100, max_depth=2, random_state=random_state)),
+#     ]
+#
+#     stacking_model = StackingClassifier(
+#         estimators=base_learners,
+#         final_estimator=LogisticRegression(),
+#         cv=2  # 5-fold cross-validation for meta-model training
+#     )
+#     return stacking_model
 
 if __name__ == "__main__":
     X, y = load_data("training_data.csv")
