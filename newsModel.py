@@ -59,7 +59,11 @@ def price_change(ticker, date_str):
     if high_of_day is None or prev_close is None:
         return None
 
-    return high_of_day - prev_close
+    diff = high_of_day - prev_close
+    percent = (diff/prev_close) * 100
+    return percent
 
 # Run it
 openFile()
+
+#print(price_change("AAPU", "2025-06-20"))
