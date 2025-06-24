@@ -4,48 +4,30 @@ from machineModel import *
 from test import *
 from trainModel import *
 from stock_forecast import *
+from app import *
 from dateutil.parser import parse
 
-def main():
+def main(ticker):
     #Load the trained model
    # csvTickers()
 
-   # stock = Stocks("AAPL", 10)
-    # news_items = stock.getNews()
-    #
-    # for item in news_items:
-    #     try:
-    #         title = item["content"]["title"]
-    #         date = item["content"]["pubDate"]
-    #         # Optional: format date to something like 'June 20, 2025'
-    #         formatted_date = parse(date).strftime('%B %d, %Y %H:%M')
-    #         print(f"{formatted_date} — {title}")
-    #     except KeyError:
-    #         continue
-
-    # print(SMA_slope(stock, 20))
-    # movingAverageConvergenceDivergence(stock)
-   # print(run(stock))
-
-    # stock = Stocks("BA", 10)
-   # predicted_increase = run(stock)
-
+    stock = Stocks(ticker)
 
     model = load_model("stock_label_model.pkl")
    #
     # List of stock symbols you want to test
     #symbols_to_test = ["AAPL", "MSFT", "TSLA", "GOOG", "AMZN"]
-    symbols_to_test = ["BA", "NVDA", "SBUX", "TU"]
+   # symbols_to_test = ["BA", "NVDA", "SBUX", "TU"]
 
     features_list = []
     trend_predictions = []  # New list
     newsPredict = []
-    for symbol in symbols_to_test:
+    for symbol in stock:
         try:
-            stock = Stocks(symbol, 10)
+            #stock = Stocks(symbol, 10)
             features = extractFeatures(stock)
             if features is None or len(features) == 0:
-                print(f"⚠️ No features extracted for {symbol}, skipping...")
+                print(f" No features extracted for {symbol}, skipping...")
                 trend_predictions.append(False)
                 newsPredict.append((False, 0.0))
                 continue
@@ -70,18 +52,22 @@ def main():
         predictions = model.predict(X_new)
 
 
-        for sym, pred, trend, news in zip(symbols_to_test, predictions, trend_predictions, newsPredict):
+        for sym, pred, trend, news in zip(stock, predictions, trend_predictions, newsPredict):
             news_bool, news_percent = news
-            print(f"DEBUG: {sym} | Model: {pred} | Trend: {trend}")
-            if pred == 1 and trend and news_bool:
-                print(f"✅ Stock: {sym} --> Strong signal (Model=1, Trend=True), Current News Outlook:", newsPredict)
-            elif pred == 1:
-                print(f"➕ Stock: {sym} --> Model says buy, but trend uncertain")
-            elif trend:
-                print(f"⚠️ Stock: {sym} --> Trend looks good, but model disagrees")
-            else:
-                print(f"❌ Stock: {sym} --> No signal")
+            print(f"DEBUG: {sym} | Model: {pred} | Trend: {trend} News: {news_bool} | News: {news_percent}")
+            score = 0
+            score += int(pred == 1)
+            score += int(trend)
+            score += int(news_bool)
 
+            if score == 3:
+                print(f" Stock: {sym} --> Strong signal (Model + Trend + News all agree)")
+            elif score == 2:
+                print(f" Stock: {sym} --> Moderate signal (2 out of 3 indicators positive)")
+            elif score == 1:
+                print(f"️ Stock: {sym} --> Weak signal (only 1 indicator positive)")
+            else:
+                print(f" Stock: {sym} --> No signal (all 3 indicators negative)")
     else:
         print("No valid stock features to predict.")
 

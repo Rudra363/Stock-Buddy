@@ -1,9 +1,9 @@
 import yfinance as yf
 
 class Stocks:
-    def __init__(self, symbol, quantity):
+    def __init__(self, symbol):
         self.symbol = symbol
-        self.quantity = quantity
+        #self.quantity = quantity
         self.ticker = yf.Ticker(symbol)
         self.name = self.ticker.info.get('longName', 'Unknown Company')
         self.price = self.getPrice()  # fetch current price

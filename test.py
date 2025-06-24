@@ -10,6 +10,7 @@ model = SentenceTransformer('all-MiniLM-L6-v2')
 regressor = RandomForestRegressor()
 dataset_embeddings = []
 impact_values = []
+
 def readEmbedded():
     global dataset_embeddings, impact_values, regressor
     embedding = []
@@ -28,51 +29,42 @@ def readEmbedded():
 
     return embedding, impact
 
-def newTitle(stock):
-    # datasetEmbedding, impact = readEmbedded()
+def newTitle(stock, threshold=0.55):
+    if not dataset_embeddings or not impact_values:
+        readEmbedded()
+
     news_items = stock.getNews()
-    trueValues = 0
-    falseValues = 0
-    addedPercent = 0.0
+    added_percent = 0.0
+    count = 0
 
     for item in news_items:
-        try:
-            newTitle = item["content"]["title"]
-        except KeyError:
+        title = item.get("content", {}).get("title")
+        if not title:
             continue
 
-        new_embedding = model.encode([newTitle])
-
+        new_embedding = model.encode([title])
         similarities = cosine_similarity(new_embedding, dataset_embeddings)
         most_similar_idx = similarities.argmax()
-        most_similar_impact = impact_values[most_similar_idx]
-
         similarity_score = similarities[0][most_similar_idx]
 
-        threshold = 0.55
-
-        print(f"Input Title: '{newTitle}'")
+        print(f"Input Title: '{title}'")
         print(f"Similarity score: {similarity_score:.2f}")
 
         if similarity_score >= threshold:
             predicted_impact = regressor.predict(new_embedding)[0]
             print(f"Predicted impact on stock: {predicted_impact:.2f}%")
-            addedPercent += most_similar_impact
-
+            added_percent += predicted_impact
+            count += 1
         else:
             print("No sufficiently similar title found in dataset.")
 
-        # if most_similar_impact < 0:
-        #     falseValues += 1
-        # else:
-        #     trueValues += 1
+    if count == 0:
+        return False, 0.0
 
-    if addedPercent > 0:
-        return True, addedPercent
-    else:
-        return False, addedPercent
+    final_value = added_percent / count
+    return bool(final_value > 0), float(round(final_value, 2))
 
 
-# stock = Stocks("AAPL", 10)
+stock = Stocks("AAPL", 10)
 # readEmbedded()
-# print(newTitle(stock))
+print(newTitle(stock))

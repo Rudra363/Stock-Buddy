@@ -192,7 +192,7 @@ def readSMA(stock):
         return True
 
     if SMA_current_slope(stock, 50) == 0:
-        #if slope apporach zero from incresing then bearish
+        #if slope approach zero from increasing then bearish
         if SMA_previous_slope(stock, 50, 2) > 0:
             signals.append("Bearish Behaviour")
             #print("trigger5")
