@@ -78,24 +78,19 @@ def run(stock):
     df, predictors = process_stock(download_stock_data(symbol), stock)
 
     if symbol in stock_results and stock_results[symbol]['latest_date'] == df.index[-1]:
-        return stock_results[symbol]
+        # Return boolean instead of dict
+        return stock_results[symbol]['Prediction'] == 'increase'
 
     print(f"Processing {symbol}...")
     data = download_stock_data(symbol)
     df, predictors_with_extra = process_stock(data, stock)
     model, predictions = train_and_predict(df, predictors_with_extra)
 
-    # Get the latest data for prediction
     latest_data = df.iloc[-1:][predictors_with_extra]
 
-    # Predict for next week
     prediction = model.predict(latest_data)
     predicted_increase = bool(prediction[0])
-    print(predictions)
-    print(f"Prediction for {symbol}: {'Increase' if predicted_increase else 'No increase'}")
-    print(precision_score(predictions["Target"], predictions["Predictions"]))
 
-    # Store result
     stock_results[stock.getSymbol()] = {
         'Prediction': 'increase' if predicted_increase else 'no_increase',
         'latest_date': df.index[-1],
@@ -103,6 +98,38 @@ def run(stock):
     }
 
     return predicted_increase
+
+#
+# def run(stock):
+#     symbol = stock.getSymbol()
+#     df, predictors = process_stock(download_stock_data(symbol), stock)
+#
+#     if symbol in stock_results and stock_results[symbol]['latest_date'] == df.index[-1]:
+#         return stock_results[symbol]
+#
+#     print(f"Processing {symbol}...")
+#     data = download_stock_data(symbol)
+#     df, predictors_with_extra = process_stock(data, stock)
+#     model, predictions = train_and_predict(df, predictors_with_extra)
+#
+#     # Get the latest data for prediction
+#     latest_data = df.iloc[-1:][predictors_with_extra]
+#
+#     # Predict for next week
+#     prediction = model.predict(latest_data)
+#     predicted_increase = bool(prediction[0])
+#     #print(predictions)
+#    # print(f"Prediction for {symbol}: {'Increase' if predicted_increase else 'No increase'}")
+#    # print(precision_score(predictions["Target"], predictions["Predictions"]))
+#
+#     # Store result
+#     stock_results[stock.getSymbol()] = {
+#         'Prediction': 'increase' if predicted_increase else 'no_increase',
+#         'latest_date': df.index[-1],
+#         'latest_price': df['Close'].iloc[-1]
+#     }
+#
+#     return predicted_increase
 
 # --------------
 

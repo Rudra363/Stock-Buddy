@@ -4,79 +4,120 @@ from machineModel import *
 from test import *
 from trainModel import *
 from stock_forecast import *
-from app import *
+from test2 import *
 from dateutil.parser import parse
 
 def main(ticker):
     #Load the trained model
    # csvTickers()
-
     stock = Stocks(ticker)
 
-    model = load_model("stock_label_model.pkl")
-   #
-    # List of stock symbols you want to test
-    #symbols_to_test = ["AAPL", "MSFT", "TSLA", "GOOG", "AMZN"]
-   # symbols_to_test = ["BA", "NVDA", "SBUX", "TU"]
+    try:
+        model = load_model("stock_label_model.pkl")
+    except Exception as e:
+        print(f"❌ Failed to load model: {e}")
+        return
 
-    features_list = []
-    trend_predictions = []  # New list
-    newsPredict = []
-    for symbol in stock:
-        try:
-            #stock = Stocks(symbol, 10)
-            features = extractFeatures(stock)
-            if features is None or len(features) == 0:
-                print(f" No features extracted for {symbol}, skipping...")
-                trend_predictions.append(False)
-                newsPredict.append((False, 0.0))
-                continue
-            features_list.append(features)
+    features = extractFeatures(stock)
+    if features is None or len(features) == 0:
+        print(f"❌ No features extracted for {ticker}, skipping...")
+        return
 
-            predicted_increase = run(stock)
-            #print("predicted_increase",predicted_increase)
-            trend_predictions.append(predicted_increase)  # Save per stock
-
-            news_predict = newTitle(stock)
-            newsPredict.append(news_predict)
-
-
-        except Exception as e:
-            print(f"Error processing {symbol}: {e}")
-            trend_predictions.append(False)  # Maintain index alignment'
-
-
-    if features_list:
-        import numpy as np
-        X_new = np.array(features_list)
+    try:
+        X_new = np.array([features])  # wrap single feature in a list
         predictions = model.predict(X_new)
 
+        pred = predictions[0]
+        trend = run(stock)
+        newsBool = run3(stock)
 
-        for sym, pred, trend, news in zip(stock, predictions, trend_predictions, newsPredict):
-            news_bool, news_percent = news
-            print(f"DEBUG: {sym} | Model: {pred} | Trend: {trend} News: {news_bool} | News: {news_percent}")
-            score = 0
-            score += int(pred == 1)
-            score += int(trend)
-            score += int(news_bool)
+        print(f"DEBUG: {ticker} | Model: {pred} | Trend: {trend} | News: {newsBool}")
 
-            if score == 3:
-                print(f" Stock: {sym} --> Strong signal (Model + Trend + News all agree)")
-            elif score == 2:
-                print(f" Stock: {sym} --> Moderate signal (2 out of 3 indicators positive)")
-            elif score == 1:
-                print(f"️ Stock: {sym} --> Weak signal (only 1 indicator positive)")
-            else:
-                print(f" Stock: {sym} --> No signal (all 3 indicators negative)")
-    else:
-        print("No valid stock features to predict.")
+        score = int(pred == 1) + int(trend) + int(newsBool)
 
-    X, y = load_data("training_data.csv")
-    model, X_test, y_test = train_model(X, y)
-    evaluate_model(model, X_test, y_test)
+        if score == 3:
+            print(f"✅ Stock: {ticker} --> Strong signal (Model + Trend + News all agree)")
+        elif score == 2:
+            print(f"➕ Stock: {ticker} --> Moderate signal (2 out of 3 indicators positive)")
+        elif score == 1:
+            print(f"⚠️ Stock: {ticker} --> Weak signal (only 1 indicator positive)")
+        else:
+            print(f"❌ Stock: {ticker} --> No signal (all 3 indicators negative)")
 
-if __name__ == "__main__":
-    main()
+    except Exception as e:
+        print(f"❌ Error during prediction: {e}")
+
+   #  stock = Stocks(ticker)
+   #
+   #  model = load_model("stock_label_model.pkl")
+   # #
+   #  # List of stock symbols you want to test
+   #  #symbols_to_test = ["AAPL", "MSFT", "TSLA", "GOOG", "AMZN"]
+   # # symbols_to_test = ["BA", "NVDA", "SBUX", "TU"]
+   #
+   #  features_list = []
+   #  trend_predictions = []  # New list
+   #  newsPredict = []
+   #  #for symbol in stock:
+   #  symbol = stock.getSymbol()
+   #  try:
+   #      #stock = Stocks(symbol, 10)
+   #      features = extractFeatures(stock)
+   #      if features is None or len(features) == 0:
+   #          print(f" No features extracted for {symbol}, skipping...")
+   #          trend_predictions.append(False)
+   #          newsPredict.append((False, 0.0))
+   #          #continue
+   #      features_list.append(features)
+   #
+   #      predicted_increase = run(stock)
+   #      #print("predicted_increase",predicted_increase)
+   #      trend_predictions.append(predicted_increase)  # Save per stock
+   #
+   #      #news_predict = newTitle(stock)
+   #      news_predict = run3(stock)
+   #      newsPredict.append(news_predict)
+   #
+   #
+   #  except Exception as e:
+   #      print(f"Error processing {symbol}: {e}")
+   #      trend_predictions.append(False)  # Maintain index alignment'
+   #
+   #
+   #  if features_list:
+   #      import numpy as np
+   #      X_new = np.array(features_list)
+   #      predictions = model.predict(X_new)
+   #      sym = stock
+   #      pred = predictions[0]
+   #      trend = trend_predictions[0]
+   #      news = newsPredict[0]
+   #
+   #      for sym, pred, trend, news in zip(stock, predictions, trend_predictions, newsPredict):
+   #          news_bool, news_percent = news
+   #          print(f"DEBUG: {sym} | Model: {pred} | Trend: {trend} News: {news_bool} | News: {news_percent}")
+   #          score = 0
+   #          score += int(pred == 1)
+   #          score += int(trend)
+   #          score += int(news_bool)
+   #
+   #          if score == 3:
+   #              print(f" Stock: {sym} --> Strong signal (Model + Trend + News all agree)")
+   #          elif score == 2:
+   #              print(f" Stock: {sym} --> Moderate signal (2 out of 3 indicators positive)")
+   #          elif score == 1:
+   #              print(f"️ Stock: {sym} --> Weak signal (only 1 indicator positive)")
+   #          else:
+   #              print(f" Stock: {sym} --> No signal (all 3 indicators negative)")
+   #  else:
+   #      print("No valid stock features to predict.")
+
+    # X, y = load_data("training_data.csv")
+    # model, X_test, y_test = train_model(X, y)
+    # evaluate_model(model, X_test, y_test)
+
+# if __name__ == "__main__":
+#     main()
 
 #def main():
     # csvTickers()

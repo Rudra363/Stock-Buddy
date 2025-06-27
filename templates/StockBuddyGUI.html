@@ -12,8 +12,7 @@
         align-items: center;
         height: 100vh;
         margin: 0;
-        background: linear-gradient(to right, #6a11cb, #2575fc);
-    }
+        background: linear-gradient(to right, #000080, #00004d);    }
     #container {
         width: 400px;
         padding: 30px;
@@ -38,7 +37,7 @@
     button {
         width: 100%;
         padding: 12px;
-        background-color: #4CAF50;
+        background-color: navy;
         color: white;
         border: none;
         border-radius: 5px;
@@ -68,21 +67,27 @@
 <div id="container">
     <h2>Stock Predictor</h2>
     <input type="text" id="stockInput" placeholder="Enter stock ticker" />
-    <button onclick="predictStock()">Predict</button>
+
+    <button id="predictBtn" onclick="predictStock()">Predict</button>
+    <button id="newPredictBtn" onclick="resetForm()" style="display: none;">Predict New</button>
+
     <div id="result">Results will appear here...</div>
 </div>
+
 
 <script>
   async function predictStock() {
     const ticker = document.getElementById('stockInput').value.trim();
     const resultDiv = document.getElementById('result');
+    const predictBtn = document.getElementById('predictBtn');
+    const newPredictBtn = document.getElementById('newPredictBtn');
 
     if (ticker === "") {
       resultDiv.innerHTML = "Please enter a valid stock ticker.";
       return;
     }
 
-    resultDiv.innerHTML = "Loading prediction..."; // Optional: indicate loading
+    resultDiv.innerHTML = "Loading prediction...";
 
     try {
       const response = await fetch('/predict', {
@@ -96,14 +101,30 @@
       }
 
       const data = await response.json();
-
-      // Display the prediction output
       resultDiv.innerHTML = `<pre>${data.result}</pre>`;
+
+      // Toggle button visibility
+      predictBtn.style.display = "none";
+      newPredictBtn.style.display = "inline-block";
+
     } catch (error) {
       resultDiv.innerHTML = "Error: " + error.message;
     }
   }
+
+    function resetForm() {
+      document.getElementById('stockInput').value = "";
+      document.getElementById('result').innerHTML = "Results will appear here...";
+      document.getElementById('predictBtn').style.display = "inline-block";
+      document.getElementById('newPredictBtn').style.display = "none";
+      document.getElementById('stockInput').focus();
+      // NO automatic call to predictStock() here
+
+
+
+  }
 </script>
+
 </body>
 </html>
 
