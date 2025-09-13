@@ -126,9 +126,9 @@ def csvTickers():
 
     with open("all_stock_data.csv", newline='') as file:
         reader = csv.reader(file)
-        next(reader)  # Skip header
+        next(reader)
 
-        count = 0  # Initialize counter
+        count = 0 
 
         for row in reader:
             symbol = row[1]
@@ -142,13 +142,12 @@ def csvTickers():
 
                 count += 1
                 if count >= 9300:
-                    break  # Stop after processing 5 stocks
+                    break 
 
             except Exception as e:
                 print(f"Error processing {symbol}: {e}")
                 continue
 
-    # Write to CSV
     with open("training_data.csv", "w", newline='') as f:
         writer = csv.writer(f)
         header = [
