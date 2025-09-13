@@ -18,7 +18,7 @@ def run_main_and_capture_output(ticker):
     except Exception as e:
         print(f"Error during prediction: {e}")
     finally:
-        sys.stdout = original_stdout  # ALWAYS restore stdout here
+        sys.stdout = original_stdout  
     return captured_output.getvalue()
 
 
@@ -34,16 +34,5 @@ def predict():
     return jsonify({"result": output})
 
 
-# def run_main_and_capture_output(ticker):
-#     # Redirect stdout to capture print output from main()
-#     captured_output = io.StringIO()
-#     sys.stdout = captured_output
-#     try:
-#         main(ticker)  # Call your main() with the provided ticker
-#     except Exception as e:
-#         print(f"Error during prediction: {e}")
-#     sys.stdout = sys.__stdout__ # Reset stdout
-#     return captured_output.getvalue()
-#
 if __name__ == '__main__':
     app.run(debug=True)
