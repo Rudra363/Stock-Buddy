@@ -38,7 +38,7 @@ def openFile():
 def makeFile(data_rows):
     with open("embeddedNews.csv", 'w', newline='') as file:
         writer = csv.writer(file)
-        writer.writerow(["embedding", "price_change"])  # optional header
+        writer.writerow(["embedding", "price_change"])  
         writer.writerows(data_rows)
 
 def price_change(ticker, date_str):
@@ -63,7 +63,5 @@ def price_change(ticker, date_str):
     percent = (diff/prev_close) * 100
     return percent
 
-# Run it
 openFile()
 
-#print(price_change("AAPU", "2025-06-20"))
